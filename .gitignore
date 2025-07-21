@@ -4,3 +4,4 @@ secrets.tfvars
 **/*.log
 **/*.tfstate
 **/*.tfstate.backup
+**/*.terraform.tfstate.lock.info

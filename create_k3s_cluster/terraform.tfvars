@@ -7,3 +7,5 @@ tags = ["terraform_created"]
 # Cloud image section
 ubuntu_cloud_image_url="https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img"
 ubuntu_cloud_image="ubuntu-24.04-server-cloudimg-amd64.qcow2"
+
+# Cloud init section

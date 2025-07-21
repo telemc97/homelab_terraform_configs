@@ -30,7 +30,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
       }
     }
 
-    user_data_file_id = "local:snippets/${var.user_data_file_name}"
+    user_data_file_id = proxmox_virtual_environment_file.user_data.id
 
   }
 
@@ -55,4 +55,21 @@ resource "proxmox_virtual_environment_download_file" "ubuntu_cloud_image" {
   node_name    = var.pm_node
   url          = var.ubuntu_cloud_image_url
   file_name    = var.ubuntu_cloud_image
+}
+
+resource "proxmox_virtual_environment_file" "user_data" {
+  content_type = "snippets"
+  datastore_id = "local"
+  node_name    = var.pm_node
+
+  source_raw {
+    data = templatefile("${path.module}/user-data-cloud-config.tpl", {
+      ci_username                  = var.ci_username
+      ci_password                  = var.ci_password
+      ssh_key_0                    = var.ssh_key_0
+      ssh_key_1                    = var.ssh_key_1
+    })
+
+    file_name = "user_data.yaml"
+  }
 }
