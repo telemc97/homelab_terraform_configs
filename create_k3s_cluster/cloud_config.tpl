@@ -6,8 +6,8 @@ users:
     groups: users, sudo
     shell: /bin/bash
     ssh_authorized_keys:
-      - ${ssh_key_0}
-      - ${ssh_key_1}
+      - ${ssh_ansible_public_key}
+      - ${ssh_auxilery_public_key}
 
 chpasswd:
   expire: false

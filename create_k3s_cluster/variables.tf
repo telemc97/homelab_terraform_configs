@@ -38,11 +38,11 @@ variable "ci_password" {
     type = string
     description = "Passwords for the created VMs(The hash not the password)"
 }
-variable "ssh_key_0" {
+variable "ssh_ansible_public_key" {
     type = string
-    description = "ssh public key"
+    description = "This is the public key to be used with ansible."
 }
-variable "ssh_key_1" {
+variable "ssh_auxilery_public_key" {
     type = string
-    description = "ssh public key"
+    description = "This is an auxilery public key for testing purposes."
 }

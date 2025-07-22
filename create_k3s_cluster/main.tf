@@ -66,8 +66,8 @@ resource "proxmox_virtual_environment_file" "user_data" {
     data = templatefile("${path.module}/cloud_config.tpl", {
       ci_username                  = var.ci_username
       ci_password                  = var.ci_password
-      ssh_key_0                    = var.ssh_key_0
-      ssh_key_1                    = var.ssh_key_1
+      ssh_ansible_public_key       = var.ssh_ansible_public_key
+      ssh_auxilery_public_key      = var.ssh_auxilery_public_key
     })
 
     file_name = "user_data.yaml"
