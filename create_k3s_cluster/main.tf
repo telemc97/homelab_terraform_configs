@@ -49,7 +49,17 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
   
 }
 
+data "proxmox_file" "ubuntu_image" {
+  node      = var.pm_node
+  storage   = "local"
+  filename  = var.ubuntu_cloud_image
+  keepers = {
+    always = "check"
+  }
+}
+
 resource "proxmox_virtual_environment_download_file" "ubuntu_cloud_image" {
+  count        = data.proxmox_file.id == "" ? 1 : 0
   content_type = "import"
   datastore_id = "local"
   node_name    = var.pm_node
