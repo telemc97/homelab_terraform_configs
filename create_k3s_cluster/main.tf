@@ -3,7 +3,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
   name      = "${var.base_vm_name}-${count.index}"
   node_name = var.pm_node
   vm_id     = 300 + count.index
-  tags      =  var.tags
+  tags      = var.tags
   # should be true if qemu agent is not installed / enabled on the VM
   agent {
     enabled = true
@@ -16,7 +16,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
 
   memory {
     dedicated = 2048
-    floating  = 2048 # set equal to dedicated to enable ballooning
+    floating  = 2048
   }
 
   serial_device {}
@@ -49,17 +49,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
   
 }
 
-data "proxmox_file" "ubuntu_image" {
-  node      = var.pm_node
-  storage   = "local"
-  filename  = var.ubuntu_cloud_image
-  keepers = {
-    always = "check"
-  }
-}
-
 resource "proxmox_virtual_environment_download_file" "ubuntu_cloud_image" {
-  count        = data.proxmox_file.id == "" ? 1 : 0
   content_type = "import"
   datastore_id = "local"
   node_name    = var.pm_node
