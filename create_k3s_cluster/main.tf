@@ -25,7 +25,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
   initialization {
     ip_config {
       ipv4 {
-        address = "192.168.1.${100 + count.index}/24"
+        address = "192.168.1.${200 + count.index}/24"
         gateway = "192.168.1.1"
       }
     }
@@ -69,7 +69,6 @@ resource "proxmox_virtual_environment_file" "user_data" {
       ssh_ansible_public_key       = var.ssh_ansible_public_key
       ssh_auxilery_public_key      = var.ssh_auxilery_public_key
     })
-
     file_name = "user_data.yaml"
   }
 }
