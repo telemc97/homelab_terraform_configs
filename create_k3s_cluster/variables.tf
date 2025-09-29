@@ -19,14 +19,9 @@ variable "user_data_file_name" {
     description = "The user data file for cloud init setup."
 }
 
-# Cloud image section
-variable "ubuntu_cloud_image_url" {
+variable "disk_file_name" {
     type = string
-    description = "The cloud image url"
-}
-variable "ubuntu_cloud_image" {
-    type = string
-    description = "the cloud image disk file name"
+    description = "The name of the disk file to import from the 'Import' section of Proxmox."
 }
 
 # Cloud init section
