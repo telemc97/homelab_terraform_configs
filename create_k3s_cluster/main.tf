@@ -4,9 +4,9 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
   node_name = var.pm_node
   vm_id     = 300 + count.index
   tags      = var.tags
-  # should be true if qemu agent is not installed / enabled on the VM
+
   agent {
-    enabled = true
+    enabled = false
   }
 
   cpu {
@@ -23,6 +23,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
 
 
   initialization {
+
     ip_config {
       ipv4 {
         address = "192.168.1.${200 + count.index}/24"
@@ -30,7 +31,11 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
       }
     }
 
-    user_data_file_id = proxmox_virtual_environment_file.user_data.id
+    user_account {
+      username = var.ci_username
+      password = var.ci_password
+      keys     = [var.ssh_ansible_public_key, var.ssh_auxilery_public_key]
+    }
 
   }
 
@@ -40,35 +45,11 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
 
   disk {
     datastore_id = "local-lvm"
-    import_from  = proxmox_virtual_environment_download_file.ubuntu_cloud_image.id
+    import_from  = "local:import/${var.disk_file_name}"
     interface    = "virtio0"
     iothread     = true
     discard      = "on"
-    size         = 20
+    size         = 10
   }
   
-}
-
-resource "proxmox_virtual_environment_download_file" "ubuntu_cloud_image" {
-  content_type = "import"
-  datastore_id = "local"
-  node_name    = var.pm_node
-  url          = var.ubuntu_cloud_image_url
-  file_name    = var.ubuntu_cloud_image
-}
-
-resource "proxmox_virtual_environment_file" "user_data" {
-  content_type = "snippets"
-  datastore_id = "local"
-  node_name    = var.pm_node
-
-  source_raw {
-    data = templatefile("${path.module}/cloud_config.tpl", {
-      ci_username                  = var.ci_username
-      ci_password                  = var.ci_password
-      ssh_ansible_public_key       = var.ssh_ansible_public_key
-      ssh_auxilery_public_key      = var.ssh_auxilery_public_key
-    })
-    file_name = "user_data.yaml"
-  }
 }
