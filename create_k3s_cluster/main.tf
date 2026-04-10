@@ -1,3 +1,12 @@
+terraform {
+  required_providers {
+    proxmox = {
+      source  = "bpg/proxmox"
+      version = "0.84.1"
+    }
+  }
+}
+
 resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
   count     = var.vms_amount
   name      = "${var.base_vm_name}-${count.index}"
@@ -11,7 +20,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
 
   cpu {
     cores = 2
-    type  = "x86-64-v2-AES"  # recommended for modern CPUs
+    type  = "x86-64-v2-AES" # recommended for modern CPUs
   }
 
   memory {
@@ -51,5 +60,5 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
     discard      = "on"
     size         = 10
   }
-  
+
 }

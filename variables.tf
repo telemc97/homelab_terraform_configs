@@ -22,6 +22,7 @@ variable "vms_amount" {
 variable "user_data_file_name" {
   type        = string
   description = "The user data file for cloud init setup."
+  default     = null # Optional if not provided in tfvars
 }
 
 variable "disk_file_name" {
