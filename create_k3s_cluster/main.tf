@@ -2,7 +2,7 @@ terraform {
   required_providers {
     proxmox = {
       source  = "bpg/proxmox"
-      version = "0.84.1"
+      version = "0.101.1"
     }
   }
 }
@@ -11,7 +11,7 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
   count     = var.vms_amount
   name      = "${var.base_vm_name}-${count.index}"
   node_name = var.pm_node
-  vm_id     = 300 + count.index
+  vm_id     = var.vm_id_start + count.index
   tags      = var.tags
 
   agent {
@@ -19,13 +19,13 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
   }
 
   cpu {
-    cores = 2
-    type  = "x86-64-v2-AES" # recommended for modern CPUs
+    cores = var.cpu_cores
+    type  = var.cpu_type
   }
 
   memory {
-    dedicated = 2048
-    floating  = 2048
+    dedicated = var.memory_dedicated
+    floating  = var.memory_dedicated
   }
 
   serial_device {}
@@ -35,8 +35,8 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
 
     ip_config {
       ipv4 {
-        address = "192.168.1.${200 + count.index}/24"
-        gateway = "192.168.1.1"
+        address = "${var.ip_network_prefix}.${var.ip_address_start + count.index}/24"
+        gateway = var.ip_gateway
       }
     }
 
@@ -49,16 +49,16 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
   }
 
   network_device {
-    bridge = "vmbr0"
+    bridge = var.network_bridge
   }
 
   disk {
-    datastore_id = "local-lvm"
+    datastore_id = var.datastore_id
     import_from  = "local:import/${var.disk_file_name}"
     interface    = "virtio0"
     iothread     = true
     discard      = "on"
-    size         = 10
+    size         = var.disk_size
   }
 
 }

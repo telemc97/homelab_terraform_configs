@@ -7,10 +7,6 @@ variable "base_vm_name" {
   type        = string
   description = "The base name for the cluster VMs."
 }
-variable "template_name" {
-  type        = string
-  description = "The name of the template vm"
-}
 variable "tags" {
   type        = set(string)
   description = "VM tags"
@@ -19,15 +15,70 @@ variable "vms_amount" {
   type        = number
   description = "The amount of VMs to create."
 }
-variable "user_data_file_name" {
-  type        = string
-  description = "The user data file for cloud init setup."
-  default     = null # Optional if not provided in tfvars
-}
 
 variable "disk_file_name" {
   type        = string
   description = "The name of the disk file to import from the 'Import' section of Proxmox."
+}
+
+variable "vm_id_start" {
+  type        = number
+  description = "The starting VM ID for the cluster."
+  default     = null
+}
+
+variable "cpu_cores" {
+  type        = number
+  description = "The number of CPU cores for each VM."
+  default     = null
+}
+
+variable "cpu_type" {
+  type        = string
+  description = "The CPU type for each VM."
+  default     = null
+}
+
+variable "memory_dedicated" {
+  type        = number
+  description = "The dedicated memory for each VM in MB."
+  default     = null
+}
+
+variable "ip_address_start" {
+  type        = number
+  description = "The starting last octet for the static IP addresses."
+  default     = null
+}
+
+variable "ip_network_prefix" {
+  type        = string
+  description = "The network prefix for the static IP addresses (e.g., 192.168.1)."
+  default     = null
+}
+
+variable "ip_gateway" {
+  type        = string
+  description = "The gateway IP address for the VMs."
+  default     = null
+}
+
+variable "network_bridge" {
+  type        = string
+  description = "The network bridge to attach the VMs to."
+  default     = null
+}
+
+variable "datastore_id" {
+  type        = string
+  description = "The Proxmox datastore ID for the VM disks."
+  default     = null
+}
+
+variable "disk_size" {
+  type        = number
+  description = "The disk size for each VM in GB."
+  default     = null
 }
 
 # Cloud init section
