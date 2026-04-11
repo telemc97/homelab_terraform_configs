@@ -3,98 +3,28 @@ variable "pm_node" {
   description = "The Proxmox node to create the vms"
 }
 
-variable "base_vm_name" {
-  type        = string
-  description = "The base name for the cluster VMs."
-}
-variable "tags" {
-  type        = set(string)
-  description = "VM tags"
-}
-variable "vms_amount" {
-  type        = number
-  description = "The amount of VMs to create."
-}
-
-variable "disk_file_name" {
-  type        = string
-  description = "The name of the disk file to import from the 'Import' section of Proxmox."
-}
-
-variable "vm_id_start" {
-  type        = number
-  description = "The starting VM ID for the cluster."
-  default     = null
-}
-
-variable "cpu_cores" {
-  type        = number
-  description = "The number of CPU cores for each VM."
-  default     = null
-}
-
-variable "cpu_type" {
-  type        = string
-  description = "The CPU type for each VM."
-  default     = null
-}
-
-variable "memory_dedicated" {
-  type        = number
-  description = "The dedicated memory for each VM in MB."
-  default     = null
-}
-
-variable "ip_address_start" {
-  type        = number
-  description = "The starting last octet for the static IP addresses."
-  default     = null
-}
-
-variable "ip_network_prefix" {
-  type        = string
-  description = "The network prefix for the static IP addresses (e.g., 192.168.1)."
-  default     = null
-}
-
-variable "ip_gateway" {
-  type        = string
-  description = "The gateway IP address for the VMs."
-  default     = null
-}
-
-variable "network_bridge" {
-  type        = string
-  description = "The network bridge to attach the VMs to."
-  default     = null
-}
-
-variable "datastore_id" {
-  type        = string
-  description = "The Proxmox datastore ID for the VM disks."
-  default     = null
-}
-
-variable "disk_size" {
-  type        = number
-  description = "The disk size for each VM in GB."
-  default     = null
+variable "k3s_config" {
+  type = object({
+    base_vm_name      = string
+    vms_amount        = number
+    disk_file_name    = string
+    tags              = optional(set(string), ["terraform_created"])
+    vm_id_start       = optional(number, 300)
+    cpu_cores         = optional(number, 2)
+    cpu_type          = optional(string, "x86-64-v2-AES")
+    memory_dedicated  = optional(number, 2048)
+    ip_address_start  = optional(number, 200)
+    ip_network_prefix = optional(string, "192.168.1")
+    ip_gateway        = optional(string, "192.168.1.1")
+    network_bridge    = optional(string, "vmbr0")
+    datastore_id      = optional(string, "local-lvm")
+    disk_size         = optional(number, 10)
+  })
+  description = "Configuration for the k3s cluster nodes"
 }
 
 # Cloud init section
 variable "ci_username" {
   type        = string
   description = "Username for the created VMs"
-}
-variable "ci_password" {
-  type        = string
-  description = "Passwords for the created VMs(The hash not the password)"
-}
-variable "ssh_ansible_public_key" {
-  type        = string
-  description = "This is the public key to be used with ansible."
-}
-variable "ssh_auxilery_public_key" {
-  type        = string
-  description = "This is an auxilery public key for testing purposes."
 }

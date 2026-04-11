@@ -10,7 +10,7 @@ This repository provides a modular Terraform setup to deploy and manage virtual 
 - **Native Terraform Modules**: Clean separation between orchestration and resource definitions.
 - **Proxmox Integration**: Uses the `bpg/proxmox` provider for modern API interactions.
 - **Automated Provisioning**: Cloud-Init support for user accounts, SSH keys, and network configuration.
-- **Flexible & Reusable**: Easily adjust CPU, RAM, Disk, and Networking parameters through variables.
+- **Flexible & Scalable**: Uses configuration objects to minimize boilerplate and simplify cluster management.
 
 ---
 
@@ -19,7 +19,7 @@ This repository provides a modular Terraform setup to deploy and manage virtual 
 ```text
 .
 ├── main.tf                # Root orchestrator (calls modules)
-├── variables.tf           # Root variable declarations
+├── variables.tf           # Root variable declarations (uses objects)
 ├── providers.tf           # Proxmox provider configuration
 ├── secrets.tf             # Sensitive variable declarations (API keys, etc.)
 ├── terraform.tfvars       # Main configuration values (ignored by git)
@@ -64,7 +64,7 @@ Ensure your API endpoint is accessible from your local machine. Usually, it foll
 ---
 
 ### 2. Configuration
-Create a `terraform.tfvars` file in the root directory and provide your environment details:
+Create a `terraform.tfvars` file in the root directory and provide your environment details. Note that sensitive credentials (API tokens, passwords, and SSH keys) are declared in `secrets.tf`, while general configuration is in `variables.tf`.
 
 ```hcl
 # Proxmox Connection
@@ -72,62 +72,53 @@ pm_api_endpoint = "https://192.168.1.10:8006/api2/json"
 pm_api_token    = "user@pve!token-id=uuid"
 pm_node         = "pve-01"
 
-# VM Customization
-vms_amount     = 3
-base_vm_name   = "k3s-node"
-disk_file_name = "ubuntu-24.04-server-cloudimg-amd64.qcow2"
+# Cluster Configuration
+k3s_config = {
+  base_vm_name   = "k3s-node"
+  vms_amount     = 3
+  disk_file_name = "ubuntu-24.04-server-cloudimg-amd64.qcow2"
+  tags           = ["terraform", "k3s"]
 
-# VM Hardware (Optional - Defaults shown)
-# vm_id_start      = 300
-# cpu_cores        = 2
-# cpu_type         = "x86-64-v2-AES"
-# memory_dedicated = 2048
-# disk_size        = 10
-# datastore_id     = "local-lvm"
-
-# Networking (Optional - Defaults shown)
-# network_bridge    = "vmbr0"
-# ip_network_prefix = "192.168.1"
-# ip_address_start  = 200
-# ip_gateway        = "192.168.1.1"
+  # Optional Hardware/Network overrides (Defaults will be used if omitted)
+  # cpu_cores        = 4
+  # memory_dedicated = 4096
+  # ip_address_start  = 100
+}
 
 # Cloud-Init
-ci_username    = "admin"
-ci_password    = "$6$rounds=4096$..." # SHA-512 hashed password
-ssh_ansible_public_key = "ssh-ed25519 ..."
+ci_username             = "admin"
+ci_password             = "$6$rounds=4096$..." # SHA-512 hashed password
+ssh_ansible_public_key  = "ssh-ed25519 ..."
+ssh_auxilery_public_key = "ssh-ed25519 ..."
 ```
 
-### Required Configuration Fields
-
-The following variables **must** be defined in your `terraform.tfvars` (or passed via environment variables) for the deployment to succeed:
+### Required Connection Fields
 
 | Variable | Description |
 | :--- | :--- |
 | `pm_api_endpoint` | The full Proxmox API URL (including `/api2/json`). |
 | `pm_api_token` | The Proxmox API Token ID and Secret in the format `user@pve!token_id=secret`. |
 | `pm_node` | The specific Proxmox node where the virtual machines will be provisioned. |
-| `disk_file_name` | The name of the cloud-init disk image available in your Proxmox `import` datastore. |
-| `ci_username` | The default username to be created on the guest OS. |
-| `ci_password` | The SHA-512 hashed password for the guest user (use `mkpasswd -m sha-512`). |
-| `ssh_ansible_public_key` | The public SSH key to allow access for configuration management tools. |
 
-### VM Related Parameters
+### Configuration Object (`k3s_config`)
 
-The following variables allow you to customize the cluster and the underlying virtual hardware. Most of these have sensible defaults defined in the module.
+The following properties can be set within the `k3s_config` object. Required fields are marked with **(*)**.
 
-| Variable | Default | Description |
+| Property | Default | Description |
 | :--- | :--- | :--- |
-| `vms_amount` | `2` | Number of virtual machines to provision for the cluster. |
-| `base_vm_name` | `"k3s"` | Prefix for the VM names (e.g., `k3s-0`, `k3s-1`). |
-| `vm_id_start` | `300` | The starting VM ID in Proxmox to avoid collisions. |
+| `base_vm_name` (*) | - | Prefix for the VM names (e.g., `k3s-0`, `k3s-1`). |
+| `vms_amount` (*) | - | Number of virtual machines to provision for the cluster. |
+| `disk_file_name` (*) | - | The name of the cloud-init disk image in Proxmox. |
+| `tags` | `["terraform_created"]` | Set of tags to apply to the VMs. |
+| `vm_id_start` | `300` | The starting VM ID in Proxmox. |
 | `cpu_cores` | `2` | Number of CPU cores assigned to each VM. |
-| `cpu_type` | `"x86-64-v2-AES"` | CPU model type (use `host` for maximum performance). |
+| `cpu_type` | `"x86-64-v2-AES"` | CPU model type. |
 | `memory_dedicated` | `2048` | Dedicated RAM (in MB) for each node. |
 | `disk_size` | `10` | Size of the root disk (in GB). |
 | `datastore_id` | `"local-lvm"` | Proxmox storage ID for the VM disks. |
 | `network_bridge` | `"vmbr0"` | The Proxmox network bridge for the VMs. |
 | `ip_network_prefix`| `"192.168.1"` | The first three octets of the static IP subnet. |
-| `ip_address_start` | `200` | The starting last octet for the static IP assignment. |
+| `ip_address_start` | `200` | The starting last octet for static IP assignment. |
 | `ip_gateway` | `"192.168.1.1"` | The default gateway for the cluster network. |
 
 ### 3. Usage
@@ -146,23 +137,8 @@ terraform apply
 
 ---
 
-## Technical Details
-
-### Networking
-By default, the module assigns static IPs. You can customize the range using:
-- `ip_network_prefix` (Default: `192.168.1`)
-- `ip_address_start` (Default: `200`)
-- `ip_gateway` (Default: `192.168.1.1`)
-
-### Customizing Hardware
-Resources can be scaled per cluster instance:
-- `cpu_cores`: Number of cores per VM.
-- `memory_dedicated`: RAM in MB.
-- `disk_size`: Root disk size in GB.
-
----
-
 ## Development & Best Practices
-- **State Management**: It is recommended to use a remote backend (e.g., GitLab HTTP, S3, or PostgreSQL) for state persistence.
-- **Security**: Never commit `.tfvars` files or `.terraform.lock.hcl` containing sensitive information.
+- **Scalability**: To add a new cluster type, define a new configuration object in the root `variables.tf` and add a corresponding module call in `main.tf`.
+- **State Management**: It is recommended to use a remote backend (e.g., GitLab HTTP, S3, or PostgreSQL).
+- **Security**: Never commit `.tfvars` files. Use the provided `terraform.tfvars.example` as a template.
 - **Formatting**: Always run `terraform fmt -recursive` before submitting changes.

@@ -8,24 +8,24 @@ terraform {
 }
 
 resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
-  count     = var.vms_amount
-  name      = "${var.base_vm_name}-${count.index}"
+  count     = var.config.vms_amount
+  name      = "${var.config.base_vm_name}-${count.index}"
   node_name = var.pm_node
-  vm_id     = var.vm_id_start + count.index
-  tags      = var.tags
+  vm_id     = var.config.vm_id_start + count.index
+  tags      = var.config.tags
 
   agent {
     enabled = false
   }
 
   cpu {
-    cores = var.cpu_cores
-    type  = var.cpu_type
+    cores = var.config.cpu_cores
+    type  = var.config.cpu_type
   }
 
   memory {
-    dedicated = var.memory_dedicated
-    floating  = var.memory_dedicated
+    dedicated = var.config.memory_dedicated
+    floating  = var.config.memory_dedicated
   }
 
   serial_device {}
@@ -35,8 +35,8 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
 
     ip_config {
       ipv4 {
-        address = "${var.ip_network_prefix}.${var.ip_address_start + count.index}/24"
-        gateway = var.ip_gateway
+        address = "${var.config.ip_network_prefix}.${var.config.ip_address_start + count.index}/24"
+        gateway = var.config.ip_gateway
       }
     }
 
@@ -49,16 +49,16 @@ resource "proxmox_virtual_environment_vm" "ubuntu_vm" {
   }
 
   network_device {
-    bridge = var.network_bridge
+    bridge = var.config.network_bridge
   }
 
   disk {
-    datastore_id = var.datastore_id
-    import_from  = "local:import/${var.disk_file_name}"
+    datastore_id = var.config.datastore_id
+    import_from  = "local:import/${var.config.disk_file_name}"
     interface    = "virtio0"
     iothread     = true
     discard      = "on"
-    size         = var.disk_size
+    size         = var.config.disk_size
   }
 
 }
