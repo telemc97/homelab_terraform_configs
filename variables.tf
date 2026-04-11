@@ -3,7 +3,7 @@ variable "pm_node" {
   description = "The Proxmox node to create the vms"
 }
 
-variable "config" {
+variable "k3s_config" {
   type = object({
     base_vm_name      = string
     vms_amount        = number
@@ -20,23 +20,11 @@ variable "config" {
     datastore_id      = optional(string, "local-lvm")
     disk_size         = optional(number, 10)
   })
-  description = "Configuration for the cluster nodes"
+  description = "Configuration for the k3s cluster nodes"
 }
 
 # Cloud init section
 variable "ci_username" {
   type        = string
   description = "Username for the created VMs"
-}
-variable "ci_password" {
-  type        = string
-  description = "Passwords for the created VMs(The hash not the password)"
-}
-variable "ssh_ansible_public_key" {
-  type        = string
-  description = "This is the public key to be used with ansible."
-}
-variable "ssh_auxilery_public_key" {
-  type        = string
-  description = "This is an auxilery public key for testing purposes."
 }
